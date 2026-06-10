@@ -1,11 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-// Note: For this prototype, we use standard supabase-js. 
-// For production auth, you'll want to migrate to @supabase/ssr.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/utils/supabase';
 
 // Define the Product TypeScript interface based on our database schema
 interface Product {
@@ -33,7 +26,7 @@ export default async function HomePage() {
       categories ( name, slug )
     `);
 
-  // Explicitly tell TypeScript that this data is an array of our Product interface
+  // Explicitly tell TypeScript that this data matches our Product interface
   const products = data as unknown as Product[] | null;
 
   if (error) {
@@ -46,7 +39,6 @@ export default async function HomePage() {
   }
 
   // Filter products into their respective categories based on the category slug
-  // Ensure your categories table has the exact slugs 'sambal' and 'books'
   const sambals = products?.filter((p) => p.categories?.slug === 'sambal') || [];
   const books = products?.filter((p) => p.categories?.slug === 'books') || [];
 
@@ -68,7 +60,7 @@ export default async function HomePage() {
       <section className="mb-16">
         <h2 className="text-3xl font-black border-b-2 border-black pb-2 mb-6 uppercase">Sambal Selection</h2>
         {sambals.length === 0 ? (
-          <p className="italic font-mono">No sambal products found in the database.</p>
+          <p className="italic font-mono border border-dashed border-black p-4">No sambal products found in the database.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {sambals.map((product) => (
@@ -82,7 +74,7 @@ export default async function HomePage() {
       <section>
         <h2 className="text-3xl font-black border-b-2 border-black pb-2 mb-6 uppercase">Books Selection</h2>
         {books.length === 0 ? (
-          <p className="italic font-mono">No book products found in the database.</p>
+          <p className="italic font-mono border border-dashed border-black p-4">No book products found in the database.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {books.map((product) => (
@@ -102,10 +94,10 @@ function ProductCard({ product }: { product: Product }) {
       <div>
         {/* Wireframe Image Placeholder */}
         <div className="w-full h-56 border-2 border-black flex items-center justify-center bg-white mb-4 overflow-hidden relative">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
-            <span className="text-xs font-mono uppercase tracking-widest text-black bg-white px-2 py-1 border border-black relative z-10">
-              Image Placeholder
-            </span>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
+          <span className="text-xs font-mono uppercase tracking-widest text-black bg-white px-2 py-1 border border-black relative z-10">
+            Image Placeholder
+          </span>
         </div>
         
         {/* Product Details */}
@@ -115,7 +107,7 @@ function ProductCard({ product }: { product: Product }) {
       
       {/* Price & Action */}
       <div className="flex justify-between items-center border-t-2 border-black pt-4 mt-auto">
-        <span className="font-black text-lg">RM {product.price.toFixed(2)}</span>
+        <span className="font-black text-lg">RM {Number(product.price).toFixed(2)}</span>
         <button className="border-2 border-black px-4 py-2 hover:bg-black hover:text-white transition-colors uppercase text-xs font-bold tracking-wider">
           Add to Cart
         </button>
