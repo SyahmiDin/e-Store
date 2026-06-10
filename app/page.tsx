@@ -1,65 +1,125 @@
-import Image from "next/image";
+import { createClient } from '@supabase/supabase-js';
 
-export default function Home() {
+// Initialize Supabase client
+// Note: For this prototype, we use standard supabase-js. 
+// For production auth, you'll want to migrate to @supabase/ssr.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Define the Product TypeScript interface based on our database schema
+interface Product {
+  product_id: string;
+  name: string;
+  description: string;
+  price: number;
+  category_id: string;
+  categories: {
+    name: string;
+    slug: string;
+  };
+}
+
+export default async function HomePage() {
+  // Fetch products and perform a relational join to get the category slug
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      product_id,
+      name,
+      description,
+      price,
+      category_id,
+      categories ( name, slug )
+    `);
+
+  // Explicitly tell TypeScript that this data is an array of our Product interface
+  const products = data as unknown as Product[] | null;
+
+  if (error) {
+    console.error('Error fetching products:', error);
+    return (
+      <div className="min-h-screen bg-white text-black p-8 font-mono">
+        <p>Error loading products. Check your console and Supabase connection.</p>
+      </div>
+    );
+  }
+
+  // Filter products into their respective categories based on the category slug
+  // Ensure your categories table has the exact slugs 'sambal' and 'books'
+  const sambals = products?.filter((p) => p.categories?.slug === 'sambal') || [];
+  const books = products?.filter((p) => p.categories?.slug === 'books') || [];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen p-8 bg-white text-black font-sans">
+      {/* Header */}
+      <header className="border-b-4 border-black pb-4 mb-12 flex justify-between items-end">
+        <div>
+          <h1 className="text-4xl font-extrabold uppercase tracking-widest mb-1">E-Store</h1>
+          <p className="text-sm font-mono uppercase tracking-widest">Prototype Build</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <nav className="space-x-6 font-bold uppercase text-sm">
+          <a href="#" className="hover:underline decoration-2 underline-offset-4">Cart (0)</a>
+          <a href="#" className="hover:underline decoration-2 underline-offset-4">Login</a>
+        </nav>
+      </header>
+
+      {/* Sambal Section */}
+      <section className="mb-16">
+        <h2 className="text-3xl font-black border-b-2 border-black pb-2 mb-6 uppercase">Sambal Selection</h2>
+        {sambals.length === 0 ? (
+          <p className="italic font-mono">No sambal products found in the database.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {sambals.map((product) => (
+              <ProductCard key={product.product_id} product={product} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Books Section */}
+      <section>
+        <h2 className="text-3xl font-black border-b-2 border-black pb-2 mb-6 uppercase">Books Selection</h2>
+        {books.length === 0 ? (
+          <p className="italic font-mono">No book products found in the database.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {books.map((product) => (
+              <ProductCard key={product.product_id} product={product} />
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
+// Reusable Product Card Component
+function ProductCard({ product }: { product: Product }) {
+  return (
+    <div className="border-2 border-black p-5 flex flex-col justify-between group hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white">
+      <div>
+        {/* Wireframe Image Placeholder */}
+        <div className="w-full h-56 border-2 border-black flex items-center justify-center bg-white mb-4 overflow-hidden relative">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
+            <span className="text-xs font-mono uppercase tracking-widest text-black bg-white px-2 py-1 border border-black relative z-10">
+              Image Placeholder
+            </span>
         </div>
-      </main>
+        
+        {/* Product Details */}
+        <h3 className="font-black text-xl mb-2 uppercase leading-tight">{product.name}</h3>
+        <p className="text-sm mb-6 line-clamp-3 font-mono">{product.description}</p>
+      </div>
+      
+      {/* Price & Action */}
+      <div className="flex justify-between items-center border-t-2 border-black pt-4 mt-auto">
+        <span className="font-black text-lg">RM {product.price.toFixed(2)}</span>
+        <button className="border-2 border-black px-4 py-2 hover:bg-black hover:text-white transition-colors uppercase text-xs font-bold tracking-wider">
+          Add to Cart
+        </button>
+      </div>
     </div>
   );
 }
