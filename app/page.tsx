@@ -1,5 +1,7 @@
 import { supabase } from '@/utils/supabase';
 
+export const revalidate = 0;
+
 // Define the Product TypeScript interface based on our database schema
 interface Product {
   product_id: string;
