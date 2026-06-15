@@ -48,9 +48,9 @@ export default async function SellerDashboard() {
                 </div>
 
                 <nav className="flex flex-col space-y-4 font-bold uppercase tracking-wider">
-                    <a href="#" className="p-2 border-2 border-black bg-black text-white">Dashboard</a>
+                    <Link href="/seller/dashboard" className="p-2 border-2 border-black bg-black text-white">Dashboard</Link>
                     <a href="#" className="p-2 border-2 border-transparent hover:border-black transition-colors">Orders (0)</a>
-                    <a href="#" className="p-2 border-2 border-transparent hover:border-black transition-colors">Store Settings</a>
+                    <Link href="/seller/dashboard/settings" className="p-2 border-2 border-transparent hover:border-black transition-colors">Store Settings</Link>
                 </nav>
             </aside>
 
