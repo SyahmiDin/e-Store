@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase';
 import Link from 'next/link';
 import SignOutButton from '@/components/SignOutButton';
+import { addToCart } from './actions/cart';
 
 interface Product {
   product_id: string;
@@ -25,16 +26,34 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   let buyerName = null;
+  let cartItemCount = 0; // <-- Add this variable
 
-  // 2. If logged in, fetch their name from our public.users table
+  // 2. If logged in, fetch their name AND their cart count
   if (user) {
     const { data: profile } = await supabase
       .from('users')
       .select('name')
       .eq('user_id', user.id)
       .single();
-    
+
     buyerName = profile?.name;
+
+    // Fetch the cart ID for this user
+    const { data: cart } = await supabase
+      .from('cart')
+      .select('cart_id')
+      .eq('buyer_id', user.id)
+      .single();
+
+    // If they have a cart, count how many unique items are in it!
+    if (cart) {
+      const { count } = await supabase
+        .from('cart_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('cart_id', cart.cart_id);
+
+      cartItemCount = count || 0;
+    }
   }
 
   // 3. Fetch all products (Same as before)
@@ -72,12 +91,16 @@ export default async function HomePage() {
           <h1 className="text-4xl font-extrabold uppercase tracking-widest mb-1">E-Store</h1>
           <p className="text-sm font-mono uppercase tracking-widest">Prototype Build</p>
         </div>
-        
+
         {/* Dynamic Navigation */}
         <nav className="space-x-6 font-bold uppercase text-sm flex items-center">
           <Link href="/shops" className="hover:underline decoration-2 underline-offset-4">Stores</Link>
-          <a href="#" className="hover:underline decoration-2 underline-offset-4">Cart (0)</a>
-          
+
+          {/* Automatically updates when you click Add to Cart! */}
+          <Link href="/cart" className="hover:underline decoration-2 underline-offset-4">
+            Cart ({cartItemCount})
+          </Link>
+
           {/* If user exists, show greeting AND Sign Out button. Otherwise, show Login/Register */}
           {buyerName ? (
             <div className="flex items-center gap-4">
@@ -152,16 +175,26 @@ function ProductCard({ product }: { product: Product }) {
             Image Placeholder
           </span>
         </div>
-        
+
         <h3 className="font-black text-xl mb-2 uppercase leading-tight">{product.name}</h3>
         <p className="text-sm mb-6 line-clamp-3 font-mono">{product.description}</p>
       </div>
-      
+
+      {/* Price & Action */}
       <div className="flex justify-between items-center border-t-2 border-black pt-4 mt-auto">
         <span className="font-black text-lg">RM {Number(product.price).toFixed(2)}</span>
-        <button className="border-2 border-black px-4 py-2 hover:bg-black hover:text-white transition-colors uppercase text-xs font-bold tracking-wider">
-          Add to Cart
-        </button>
+
+        {/* The Add to Cart Form */}
+        <form action={addToCart}>
+          <input type="hidden" name="product_id" value={product.product_id} />
+          <button
+            type="submit"
+            className="border-2 border-black px-4 py-2 hover:bg-black hover:text-white transition-colors uppercase text-xs font-bold tracking-wider cursor-pointer"
+          >
+            Add to Cart
+          </button>
+        </form>
+
       </div>
     </div>
   );

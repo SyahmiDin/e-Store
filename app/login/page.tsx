@@ -71,7 +71,7 @@ export default function LoginPage() {
           {/* Action Button */}
           <button 
             type="submit" 
-            className="w-full bg-black text-white font-bold uppercase tracking-widest text-lg p-4 hover:bg-white hover:text-black border-4 border-black transition-colors mt-4"
+            className="w-full bg-black text-white font-bold uppercase tracking-widest text-lg p-4 hover:bg-white hover:cursor-pointer hover:text-black border-4 border-black transition-colors mt-4"
           >
             Sign In
           </button>
