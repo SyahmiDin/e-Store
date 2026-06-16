@@ -26,17 +26,19 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   let buyerName = null;
-  let cartItemCount = 0; // <-- Add this variable
+  let cartItemCount = 0;
+  let userRole = null; // <--- Add this variable
 
-  // 2. If logged in, fetch their name AND their cart count
+  // 2. If logged in, fetch their name, role AND cart count
   if (user) {
     const { data: profile } = await supabase
       .from('users')
-      .select('name')
+      .select('name, role')
       .eq('user_id', user.id)
       .single();
 
     buyerName = profile?.name;
+    userRole = profile?.role;
 
     // Fetch the cart ID for this user
     const { data: cart } = await supabase
@@ -94,6 +96,12 @@ export default async function HomePage() {
 
         {/* Dynamic Navigation */}
         <nav className="space-x-6 font-bold uppercase text-sm flex items-center">
+
+          {userRole === 'seller' && (
+            <Link href="/dashboard" className="hover:underline decoration-2 underline-offset-4 bg-black text-white px-3 py-1">
+              Seller Panel
+            </Link>
+          )}
           <Link href="/shops" className="hover:underline decoration-2 underline-offset-4">Stores</Link>
 
           {/* Automatically updates when you click Add to Cart! */}
@@ -149,7 +157,7 @@ export default async function HomePage() {
   );
 }
 
-// Reusable Product Card Component (Same as before)
+// Reusable Product Card Component
 function ProductCard({ product }: { product: Product }) {
   const storeName = product.users?.name || 'Unknown Store';
   const storeId = product.users?.user_id;
@@ -158,6 +166,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <div className="border-2 border-black p-5 flex flex-col justify-between group hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white">
       <div>
+        {/* Store Link */}
         {storeId && (
           <Link href={`/shop/${storeId}`} className="flex items-center gap-2 mb-3 w-fit group/store">
             <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center font-bold text-xs border border-black group-hover/store:bg-white group-hover/store:text-black transition-colors">
@@ -169,32 +178,36 @@ function ProductCard({ product }: { product: Product }) {
           </Link>
         )}
 
-        <div className="w-full h-56 border-2 border-black flex items-center justify-center bg-white mb-4 overflow-hidden relative">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
-          <span className="text-xs font-mono uppercase tracking-widest text-black bg-white px-2 py-1 border border-black relative z-10">
-            Image Placeholder
-          </span>
-        </div>
+        {/* CLICKABLE PRODUCT LINK */}
+        <Link href={`/product/${product.product_id}`} className="block group/item cursor-pointer">
+          <div className="w-full h-56 border-2 border-black flex items-center justify-center bg-white mb-4 overflow-hidden relative">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
+            <span className="text-xs font-mono uppercase tracking-widest text-black bg-white px-2 py-1 border border-black relative z-10 group-hover/item:bg-black group-hover/item:text-white transition-colors">
+              View Details
+            </span>
+          </div>
 
-        <h3 className="font-black text-xl mb-2 uppercase leading-tight">{product.name}</h3>
+          <h3 className="font-black text-xl mb-2 uppercase leading-tight group-hover/item:underline decoration-2 underline-offset-2">
+            {product.name}
+          </h3>
+        </Link>
+
         <p className="text-sm mb-6 line-clamp-3 font-mono">{product.description}</p>
       </div>
 
-      {/* Price & Action */}
+      {/* Price & Add to Cart */}
       <div className="flex justify-between items-center border-t-2 border-black pt-4 mt-auto">
         <span className="font-black text-lg">RM {Number(product.price).toFixed(2)}</span>
 
-        {/* The Add to Cart Form */}
         <form action={addToCart}>
           <input type="hidden" name="product_id" value={product.product_id} />
           <button
             type="submit"
             className="border-2 border-black px-4 py-2 hover:bg-black hover:text-white transition-colors uppercase text-xs font-bold tracking-wider cursor-pointer"
           >
-            Add to Cart
+            Add
           </button>
         </form>
-
       </div>
     </div>
   );

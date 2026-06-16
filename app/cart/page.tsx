@@ -69,7 +69,7 @@ export default async function CartPage() {
     }
 
     return (
-        <main className="min-h-screen p-8 bg-white text-black font-sans max-w-5xl mx-auto">
+        <main className="min-h-screen p-8 bg-white text-black font-sans">
 
             {/* Navigation & Header */}
             <nav className="mb-8 border-b-4 border-black pb-4 flex justify-between items-end">

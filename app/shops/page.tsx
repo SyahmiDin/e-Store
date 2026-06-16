@@ -21,7 +21,7 @@ export default async function ShopsDirectoryPage() {
   }
 
   return (
-    <main className="min-h-screen p-8 bg-white text-black font-sans max-w-6xl mx-auto">
+    <main className="min-h-screen p-8 bg-white text-black font-sans">
       
       {/* Header */}
       <header className="border-b-4 border-black pb-4 mb-12 flex justify-between items-end">
