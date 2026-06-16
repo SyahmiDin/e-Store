@@ -6,6 +6,7 @@ interface Product {
     name: string;
     description: string;
     price: number;
+    image_url?: string | null;
     categories: {
         name: string;
         slug: string;
@@ -62,6 +63,7 @@ export default async function ShopPage({ params }: { params: Promise<{ id: strin
       name,
       description,
       price,
+      image_url,
       categories ( name, slug )
     `)
         .eq('seller_id', sellerId)
@@ -70,7 +72,7 @@ export default async function ShopPage({ params }: { params: Promise<{ id: strin
     const products = rawProducts as unknown as Product[] | null;
 
     return (
-        <main className="min-h-screen p-8 bg-white text-black font-sans max-w-6xl mx-auto">
+        <main className="min-h-screen p-8 bg-white text-black font-sans">
 
             {/* Navigation */}
             <nav className="mb-8">
@@ -128,13 +130,32 @@ function ProductCard({ product }: { product: Product }) {
                     {product.categories?.name}
                 </span>
 
-                {/* Wireframe Image Placeholder */}
-                <div className="w-full h-48 border-2 border-black flex items-center justify-center bg-white mb-4 overflow-hidden relative">
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
-                    <span className="text-xs font-mono uppercase tracking-widest text-black bg-white px-2 py-1 border border-black relative z-10">
-                        Image Placeholder
-                    </span>
-                </div>
+                {/* IMAGE CONTAINER */}
+                <Link href={`/product/${product.product_id}`} className="block group cursor-pointer">
+                    <div className="w-full h-56 border-2 border-black flex items-center justify-center bg-gray-50 mb-4 overflow-hidden relative">
+
+                        {product.image_url ? (
+                            <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="object-cover w-full h-full grayscale transition-all duration-300 group-hover:scale-105 group-hover:grayscale-0"
+                            />
+                        ) : (
+                            <>
+                                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
+                                <span className="text-xs font-mono uppercase tracking-widest text-black bg-white px-2 py-1 border border-black relative z-10 group-hover:bg-black group-hover:text-white transition-colors">
+                                    No Image
+                                </span>
+                            </>
+                        )}
+
+                    </div>
+
+                    {/* The rest of your card (Title, Price, Add Button) stays below this */}
+                    <h3 className="font-black text-xl mb-2 uppercase leading-tight group-hover:underline decoration-2 underline-offset-2 truncate">
+                        {product.name}
+                    </h3>
+                </Link>
 
                 {/* Product Details */}
                 <h3 className="font-black text-lg mb-2 uppercase leading-tight">{product.name}</h3>

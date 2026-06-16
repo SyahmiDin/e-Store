@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 export async function addToCart(formData: FormData) {
   // 1. Get the product ID from the submitted form
   const productId = formData.get('product_id') as string;
+  const quantityToAdd = parseInt(formData.get('quantity') as string) || 1;
 
   // 2. Check if the user is logged in
   const { data: { user } } = await supabase.auth.getUser();

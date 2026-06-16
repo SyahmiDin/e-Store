@@ -2,6 +2,8 @@ import { supabase } from '@/utils/supabase';
 import Link from 'next/link';
 import SignOutButton from '@/components/SignOutButton';
 import { addToCart } from './actions/cart';
+import AddToCartForm from '@/components/AddToCartForm';
+import HeroCarousel from '@/components/HeroCarousel';
 
 interface Product {
   product_id: string;
@@ -9,6 +11,7 @@ interface Product {
   description: string;
   price: number;
   category_id: string;
+  image_url?: string | null;
   categories: {
     name: string;
     slug: string;
@@ -66,6 +69,7 @@ export default async function HomePage() {
       name,
       description,
       price,
+      image_url,
       category_id,
       categories ( name, slug ),
       users ( user_id, name )
@@ -85,24 +89,55 @@ export default async function HomePage() {
   const sambals = products?.filter((p) => p.categories?.slug === 'sambal') || [];
   const books = products?.filter((p) => p.categories?.slug === 'books') || [];
 
+  // ---> NEW: Build your custom carousel list! <---
+  // Let's grab the 1st Sambal, the 1st Book, and the 2nd Book (just to make 3 items)
+  // The .filter(Boolean) part just ensures no empty/null slots break the carousel
+  const featuredProducts = [
+    sambals[0], 
+    books[0], 
+    books[1]
+  ].filter(Boolean);
+
   return (
     <main className="min-h-screen p-8 bg-white text-black font-sans">
       {/* Header */}
-      <header className="border-b-4 border-black pb-4 mb-12 flex justify-between items-end">
-        <div>
+      <header className="sticky top-0 z-50 bg-white border-b-4 border-black pt-8 pb-4 mb-12 px-8 -mx-8 -mt-8 flex flex-col lg:flex-row justify-between items-center gap-6">
+        
+        {/* 1. Left: Brand Name */}
+        <div className="w-full lg:flex-1 flex flex-col justify-center">
           <h1 className="text-4xl font-extrabold uppercase tracking-widest mb-1">E-Store</h1>
-          <p className="text-sm font-mono uppercase tracking-widest">Prototype Build</p>
+          <p className="text-xs font-mono uppercase tracking-widest text-gray-500">Prototype Build</p>
         </div>
 
-        {/* Dynamic Navigation */}
-        <nav className="space-x-6 font-bold uppercase text-sm flex items-center">
+        {/* 2. Middle: Search Bar */}
+        <div className="w-full lg:flex-1">
+          <form action="/search" className="flex border-2 border-black focus-within:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow">
+            <input 
+              type="text" 
+              name="q" 
+              placeholder="SEARCH PRODUCTS..." 
+              required
+              className="w-full p-3 font-mono outline-none text-sm bg-gray-50 focus:bg-white"
+            />
+            <button type="submit" className="bg-black text-white px-6 font-bold uppercase tracking-widest hover:cursor-pointer hover:bg-white hover:text-black border-l-2 border-black transition-colors">
+              Search
+            </button>
+          </form>
+        </div>
 
+        {/* 3. Right: Dynamic Navigation */}
+        <nav className="w-full lg:flex-1 space-x-6 font-bold uppercase text-sm flex items-center justify-end">
+          
           {userRole === 'seller' && (
             <Link href="/dashboard" className="hover:underline decoration-2 underline-offset-4 bg-black text-white px-3 py-1">
               Seller Panel
             </Link>
           )}
           <Link href="/shops" className="hover:underline decoration-2 underline-offset-4">Stores</Link>
+          
+          {user && (
+            <Link href="/profile" className="hover:underline decoration-2 underline-offset-4">Profile</Link>
+          )}
 
           {/* Automatically updates when you click Add to Cart! */}
           <Link href="/cart" className="hover:underline decoration-2 underline-offset-4">
@@ -111,20 +146,23 @@ export default async function HomePage() {
 
           {/* If user exists, show greeting AND Sign Out button. Otherwise, show Login/Register */}
           {buyerName ? (
-            <div className="flex items-center gap-4">
-              <span className="border-2 border-black px-3 py-1 bg-black text-white">
-                HELLO, {buyerName}
+            <div className="flex items-center gap-4 ml-4 border-l-2 border-black pl-6">
+              <span className="font-mono text-xs">
+                HELLO, <br/><span className="font-bold text-sm">{buyerName}</span>
               </span>
               <SignOutButton />
             </div>
           ) : (
-            <>
+            <div className="flex items-center gap-4 ml-4 border-l-2 border-black pl-6">
               <Link href="/login" className="hover:underline decoration-2 underline-offset-4">Login</Link>
               <Link href="/register" className="hover:underline decoration-2 underline-offset-4">Register</Link>
-            </>
+            </div>
           )}
         </nav>
       </header>
+
+      {/* --- HERO CAROUSEL --- */}
+      <HeroCarousel products={featuredProducts} />
 
       {/* Sambal Section */}
       <section className="mb-16">
@@ -180,11 +218,19 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* CLICKABLE PRODUCT LINK */}
         <Link href={`/product/${product.product_id}`} className="block group/item cursor-pointer">
-          <div className="w-full h-56 border-2 border-black flex items-center justify-center bg-white mb-4 overflow-hidden relative">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
-            <span className="text-xs font-mono uppercase tracking-widest text-black bg-white px-2 py-1 border border-black relative z-10 group-hover/item:bg-black group-hover/item:text-white transition-colors">
-              View Details
-            </span>
+          <div className="w-full h-56 border-2 border-black flex items-center justify-center bg-gray-50 mb-4 overflow-hidden relative">
+
+            {/* 3. SHOW THE REAL IMAGE OR THE FALLBACK */}
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="object-cover w-full h-full grayscale transition-all duration-300 group-hover/item:scale-105 group-hover/item:grayscale-0"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIxIiAvPgo8L3N2Zz4=')] opacity-50"></div>
+            )}
+
           </div>
 
           <h3 className="font-black text-xl mb-2 uppercase leading-tight group-hover/item:underline decoration-2 underline-offset-2">
@@ -199,15 +245,8 @@ function ProductCard({ product }: { product: Product }) {
       <div className="flex justify-between items-center border-t-2 border-black pt-4 mt-auto">
         <span className="font-black text-lg">RM {Number(product.price).toFixed(2)}</span>
 
-        <form action={addToCart}>
-          <input type="hidden" name="product_id" value={product.product_id} />
-          <button
-            type="submit"
-            className="border-2 border-black px-4 py-2 hover:bg-black hover:text-white transition-colors uppercase text-xs font-bold tracking-wider cursor-pointer"
-          >
-            Add
-          </button>
-        </form>
+        {/* ---> OUR NEW CLIENT COMPONENT <--- */}
+        <AddToCartForm productId={product.product_id} />
       </div>
     </div>
   );
