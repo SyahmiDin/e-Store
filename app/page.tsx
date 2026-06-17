@@ -162,7 +162,9 @@ export default async function HomePage() {
       </header>
 
       {/* --- HERO CAROUSEL --- */}
-      <HeroCarousel products={featuredProducts} />
+      <div className="-mx-8">
+        <HeroCarousel products={featuredProducts} />
+      </div>
 
       {/* Sambal Section */}
       <section className="mb-16">

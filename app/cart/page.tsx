@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import { processCheckout } from '@/app/actions/checkout';
+import CartQuantityForm from '@/components/CartQuantityForm';
 
 // Interface to help TypeScript understand our joined database query
 interface CartItem {
@@ -80,6 +81,7 @@ export default async function CartPage() {
                 <Link href="/" className="font-bold hover:underline uppercase text-sm flex items-center gap-2">
                     <span>&larr;</span> Continue Shopping
                 </Link>
+
             </nav>
 
             {/* Cart Content */}
@@ -114,8 +116,12 @@ export default async function CartPage() {
                                         <td className="p-4 border-r-4 border-black font-mono text-center">
                                             RM {item.products.price.toFixed(2)}
                                         </td>
-                                        <td className="p-4 border-r-4 border-black font-mono text-center font-bold">
-                                            {item.quantity}
+                                        {/* Replace your static quantity number with this: */}
+                                        <td className="text-center">
+                                            <CartQuantityForm
+                                                cartItemId={item.cartitem_id}
+                                                currentQuantity={item.quantity}
+                                            />
                                         </td>
                                         <td className="p-4 border-r-4 border-black font-mono text-right font-black text-lg">
                                             RM {(item.products.price * item.quantity).toFixed(2)}

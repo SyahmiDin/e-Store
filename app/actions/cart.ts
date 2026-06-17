@@ -48,8 +48,8 @@ export async function addToCart(formData: FormData) {
     // If it is, just add 1 to the quantity
     await supabase
       .from('cart_items')
-      .update({ quantity: existingItem.quantity + 1 })
-      .eq('cartitem_id', existingItem.cartitem_id);
+      .update({ quantity: existingItem.quantity + quantityToAdd })
+      .eq('cartitemid', existingItem.cartitem_id);
   } else {
     // If it's a new item, insert it with a quantity of 1
     await supabase
@@ -57,10 +57,32 @@ export async function addToCart(formData: FormData) {
       .insert({
         cart_id: cart.cart_id,
         product_id: productId,
-        quantity: 1
+        quantity: quantityToAdd
       });
   }
 
   // 6. Tell Next.js to refresh the page in the background so the cart counter updates
   revalidatePath('/');
+}
+
+export async function updateCartQuantity(formData: FormData) {
+  const cartItemId = formData.get('cart_item_id') as string;
+  const newQuantity = parseInt(formData.get('quantity') as string);
+
+  // If the quantity drops to 0 or below, we can delete the item entirely
+  if (newQuantity <= 0) {
+    await supabase
+      .from('cart_items')
+      .delete()
+      .eq('cart_item_id', cartItemId);
+  } else {
+    // Otherwise, update with the new number
+    await supabase
+      .from('cart_items')
+      .update({ quantity: newQuantity })
+      .eq('cartitem_id', cartItemId);
+  }
+
+  // Refresh the cart page so the subtotal and summary instantly update
+  revalidatePath('/cart');
 }

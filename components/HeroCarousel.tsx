@@ -15,7 +15,7 @@ type CarouselProduct = {
 export default function HeroCarousel({ products }: { products: CarouselProduct[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-scroll every 5 seconds
+  // Auto-fade every 5 seconds
   useEffect(() => {
     if (!products || products.length === 0) return;
     const timer = setInterval(() => {
@@ -33,15 +33,21 @@ export default function HeroCarousel({ products }: { products: CarouselProduct[]
   const badges = ['LATEST DROP', 'STAFF PICK', 'HOT SELLER'];
 
   return (
-    <div className="relative w-full h-[60vh] min-h-[500px] border-4 border-black mb-16 overflow-hidden bg-white group">
+    // Note: Changed `border-4` to `border-y-4` for a true full-bleed edge-to-edge look!
+    <div className="relative w-full h-[60vh] min-h-[500px] border-y-4 border-black mb-16 overflow-hidden bg-white group">
       
-      {/* Sliding Track */}
-      <div 
-        className="flex h-full transition-transform duration-700 ease-in-out"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-      >
+      {/* Fading Track Container */}
+      <div className="relative w-full h-full">
         {products.map((product, index) => (
-          <div key={product.product_id} className="w-full h-full flex-shrink-0 flex flex-col md:flex-row">
+          <div 
+            key={product.product_id} 
+            // The magic is here: absolute stacking and opacity swapping!
+            className={`absolute inset-0 w-full h-full flex flex-col md:flex-row transition-opacity duration-1000 ease-in-out ${
+              index === currentIndex 
+                ? 'opacity-100 z-10' 
+                : 'opacity-0 z-0 pointer-events-none'
+            }`}
+          >
             
             {/* Left Side: Massive Typography */}
             <div className="w-full md:w-1/2 h-1/2 md:h-full p-8 md:p-16 flex flex-col justify-center border-b-4 md:border-b-0 md:border-r-4 border-black bg-white relative z-10">
@@ -60,7 +66,7 @@ export default function HeroCarousel({ products }: { products: CarouselProduct[]
             </div>
 
             {/* Right Side: Giant Grayscale Image */}
-            <div className="w-full md:w-1/2 h-1/2 md:h-full relative">
+            <div className="w-full md:w-1/2 h-1/2 md:h-full relative bg-white">
               {product.image_url ? (
                 <img 
                   src={product.image_url} 

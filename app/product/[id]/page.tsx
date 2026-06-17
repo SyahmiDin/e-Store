@@ -2,6 +2,7 @@ import { supabase } from '@/utils/supabase';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { addToCart } from '@/app/actions/cart';
+import AddToCartForm from '@/components/AddToCartForm';
 
 interface PageProps {
     params: Promise<{
@@ -95,15 +96,9 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                     </div>
 
                     {/* Add to Cart Action */}
-                    <form action={addToCart} className="mt-auto">
-                        <input type="hidden" name="product_id" value={product.product_id} />
-                        <button
-                            type="submit"
-                            className="w-full bg-black text-white font-bold uppercase tracking-widest text-xl p-6 hover:bg-white hover:text-black border-4 border-black transition-colors shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-2 hover:translate-x-2"
-                        >
-                            Add to Cart
-                        </button>
-                    </form>
+                    <div className="mt-8">
+                        <AddToCartForm productId={product.product_id} />
+                    </div>
 
                 </div>
             </div>
