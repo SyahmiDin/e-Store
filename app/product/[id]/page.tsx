@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { addToCart } from '@/app/actions/cart';
 import AddToCartForm from '@/components/AddToCartForm';
+import Header from '@/components/Header';
 
 interface PageProps {
     params: Promise<{
@@ -13,7 +14,13 @@ interface PageProps {
 export default async function ProductDetailsPage({ params }: PageProps) {
     const { id } = await params;
 
-    // 3. Fetch the exact product and join the store (users) and category data
+    // 1. NEW FIX: Fetch the currently logged-in user!
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Extract the name (Checks metadata first, falls back to email prefix if name is empty)
+    const userName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || null;
+
+    // 2. Fetch the exact product and join the store (users) and category data
     const { data: product, error } = await supabase
         .from('products')
         .select(`
@@ -35,8 +42,12 @@ export default async function ProductDetailsPage({ params }: PageProps) {
     const storeId = product.users?.user_id;
     // @ts-ignore
     const categoryName = product.categories?.name || 'Uncategorized';
+    
     return (
         <main className="min-h-screen p-8 bg-white text-black font-sans">
+
+            {/* 3. NEW FIX: Pass the userName into the Header! */}
+            <Header showSearch={false} userName={userName} />
 
             {/* Breadcrumb Navigation */}
             <nav className="mb-8 font-mono text-sm uppercase tracking-widest flex gap-2 text-gray-500">

@@ -4,6 +4,7 @@ import SignOutButton from '@/components/SignOutButton';
 import { addToCart } from './actions/cart';
 import AddToCartForm from '@/components/AddToCartForm';
 import HeroCarousel from '@/components/HeroCarousel';
+import Header from '@/components/Header';
 
 interface Product {
   product_id: string;
