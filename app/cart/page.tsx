@@ -129,7 +129,7 @@ export default async function CartPage() {
                                         <td className="p-4 text-center">
                                             <form action={removeItem}>
                                                 <input type="hidden" name="cartitem_id" value={item.cartitem_id} />
-                                                <button type="submit" className="font-bold text-sm uppercase hover:underline decoration-2 underline-offset-4 text-gray-500 hover:text-black transition-colors">
+                                                <button type="submit" className="font-bold text-sm uppercase hover:underline hover:cursor-pointer decoration-2 underline-offset-4 text-gray-500 hover:text-black transition-colors">
                                                     Remove
                                                 </button>
                                             </form>

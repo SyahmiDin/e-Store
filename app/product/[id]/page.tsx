@@ -20,6 +20,15 @@ export default async function ProductDetailsPage({ params }: PageProps) {
     // Extract the name (Checks metadata first, falls back to email prefix if name is empty)
     const userName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || null;
 
+    // ---> NEW: Fetch the cart items to get the total count <---
+    const { data: cartItems } = await supabase
+        .from('cart_items')
+        .select('quantity');
+        // .eq('user_id', user.id) <-- Uncomment this if your cart is tied to specific users!
+
+    // Add up all the quantities in the cart
+    const cartCount = cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
+
     // 2. Fetch the exact product and join the store (users) and category data
     const { data: product, error } = await supabase
         .from('products')
@@ -46,8 +55,8 @@ export default async function ProductDetailsPage({ params }: PageProps) {
     return (
         <main className="min-h-screen p-8 bg-white text-black font-sans">
 
-            {/* 3. NEW FIX: Pass the userName into the Header! */}
-            <Header showSearch={false} userName={userName} />
+            {/* 3. NEW FIX: Pass the userName and cartCount into the Header! */}
+            <Header showSearch={false} userName={userName} cartCount={cartCount} />
 
             {/* Breadcrumb Navigation */}
             <nav className="mb-8 font-mono text-sm uppercase tracking-widest flex gap-2 text-gray-500">

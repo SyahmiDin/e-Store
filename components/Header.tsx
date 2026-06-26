@@ -4,10 +4,12 @@ import SignOutButton from '@/components/SignOutButton';
 
 export default function Header({ 
   showSearch = true,
-  userName
+  userName,
+  cartCount = 0,
 }: { 
   showSearch?: boolean;
   userName?: string | null; 
+  cartCount?: number;
 }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-6 py-6 mb-8 border-b-4 border-black bg-white">
@@ -45,8 +47,8 @@ export default function Header({
           Shops
         </Link>
         
-        <Link href="/cart" className="hover:underline hover:text-gray-600 transition-colors">
-          Cart (0)
+        <Link id="cart-target" href="/cart" className="hover:underline hover:text-gray-600 transition-colors">
+          Cart ({cartCount})
         </Link>
         
         {/* Vertical Divider */}
